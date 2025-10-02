@@ -1,0 +1,185 @@
+body {
+  padding-top: 20px;
+  background-color: #ff8c1a;
+  background: url(img/output-bg.png);
+  background-size: cover;
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+.card-deck {
+  margin: 0;
+  justify-content: space-between;
+}
+
+.card-deck .card {
+  margin: 0 0 1rem;
+  transition: transform 0.3s ease;
+}
+
+.card-deck .card:hover {
+  transform: scale(1.05);
+}
+
+@media (min-width: 576px) and (max-width: 999.98px) {
+  .card-deck .card {
+    -ms-flex: 0 0 48.7%;
+    flex: 0 0 48.7%;
+  }
+}
+
+@media (min-width: 1000px) and (max-width: 1399.98px) {
+  .card-deck .card {
+    -ms-flex: 0 0 32%;
+    flex: 0 0 32%;
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 1799.98px)
+{
+  .card-deck .card {
+    -ms-flex: 0 0 24%;
+    flex: 0 0 24%;
+  }
+}
+
+@media (min-width: 1800px)
+{
+  .card-deck .card {
+    -ms-flex: 0 0 19%;
+    flex: 0 0 19%;
+  }
+}
+
+a:link, a:visited {
+  color: black;
+  font-weight: bold;
+}
+
+a:hover, .card-link:hover, .nav-link:hover {
+  color: black;
+  text-decoration: underline;
+}
+
+a:active, .nav-link:active {
+  color: black;
+  text-decoration: underline;
+}
+
+p, li {
+  margin: 5px 0;
+  text-align: justify;
+}
+
+#cameraContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Adjust this if needed */
+}
+
+#canvasOutput {
+    display: block;
+    margin: auto;
+    max-width: 100%;
+    height: auto;
+}
+
+#videoInput {
+    max-width: 100%;
+    height: auto;
+}
+
+@keyframes subtle-scale {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse-button {
+    animation: subtle-scale 3s ease-in-out infinite; 
+    transition: transform 0.3s ease-in-out;
+}
+
+
+#loadingMessage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height to ensure vertical centering */
+    text-align: center;
+}
+
+/* Ensure the progress bar fills the width below the loader */
+#loadingMessage .progress {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  width: fit-content;
+  font-size: 40px;
+  font-family: system-ui,sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #0000;
+  -webkit-text-stroke: 1px #000;
+  background: 
+    linear-gradient(-60deg,#0000 45%,#000 0 55%,#0000 0) 
+    0/300% 100% no-repeat text;
+  animation: l3 2s linear infinite;
+}
+.loader:before {
+  content: "Loading";
+}
+@keyframes l3 {
+  0%{background-position: 100%}
+}
+
+/* Custom style for project page buttons */
+.project-btn {
+  background-color: #ff8000;
+  color: black !important;
+  padding: 10px 20px;
+  border: none;
+  margin: 5px 0;
+  display: block;
+  width: 200px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.project-btn i {
+  margin-right: 6px;
+}
+.project-btn:hover {
+  text-decoration: underline;
+  color: black !important;
+}
+
+.info-bubble {
+  display: inline-block;
+  background-color: #ffc107;
+  color: black;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: sans-serif;
+}
+
+.info-bubble p {
+  text-align: justify;
+  text-align-last: center;
+}
+
+.info-bubble.left-text-info-bubble p {
+  text-align: justify;
+  text-align-last: left;
+}
