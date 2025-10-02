@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Antal.Ai: Innovative AI Solutions & Computer Vision Expertise</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+        $(function () {
+            $('#header').load('../../templates/header.html');
+            $('#footer').load('../../templates/footer.html');
+        });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+
+<body>
+
+    <!-- header -->
+    <div id="header"></div>
+
+    <!-- actual body section -->
+    <div class="container">
+    <div class="progress" id="downloadProgressBar" style="height: 20px; margin-top: 10px;">
+      <div id="loadingProgress" class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+    </div>
+    <div id="loadingMessage" style="text-align: center; font-size: 24px;">
+      <br><br>
+      <div class="loader"></div>
+      <br><br><br>
+    </div>
+        <div id="cameraContainer" style="display: none;">
+            <label for="cameraSelect" style="font-size: 18px; font-weight: bold;">Select Camera:</label><br>
+            <select id="cameraSelect" style="display: none;"></select>
+            <br><br>
+            <video id="videoInput" width="640" height="480" style="display: none;" autoplay playsinline muted></video>
+            <canvas id="canvasOutput" width="640" height="480"></canvas>
+            <br>
+            <div class="info-bubble">
+            Try this: Show the camera a face from a phone ot tablet screen. The system will detect that it isn't viewing a real face.
+            </div>
+			<br><br>
+            <div class="alert alert-warning" role="alert">
+                  <h4 class="alert-heading">Important</h4>
+                  <p>
+                       Results may vary. Lighting and image quality can affect spoof detection.
+                  </p>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+            <a href="../../projects/face-anti-spoofing-detector.html" 
+               class="pulse-button" 
+               style="display: inline-block; background-color: black; color: white; padding: 10px 20px; text-decoration: none; border: none; margin-bottom: 10px;             text-align: center;">
+              LEARN MORE
+            </a>
+            </div>
+        </div>
+
+    </div>
+<br><br>
+    <!-- footer -->
+    <div id="footer"></div>
+
+    <script>
+        var Module = {
+            setStatus: function(text) {
+                var m = text.match(/(\d+)\/(\d+)/);
+                if (m) {
+                    var loaded = parseInt(m[1]);
+                    var total = parseInt(m[2]);
+                    if (total) {
+                        var pct = Math.floor(loaded / total * 100);
+                        var bar = document.getElementById('loadingProgress');
+                        if (bar) {
+                            bar.style.width = pct + '%';
+                            bar.textContent = pct + '%';
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="demo.js"></script>
+    <script src="video_utils.js"></script>
+    <script>
+        let utils = new Utils('errorMessage');
+        let streaming = false;
+        let videoInput = document.getElementById('videoInput');
+        let canvasOutput = document.getElementById('canvasOutput');
+        let canvasContext = canvasOutput.getContext('2d');
+        let loadingMessage = document.getElementById('loadingMessage');
+        let downloadProgressBar = document.getElementById('downloadProgressBar');
+        let cameraContainer = document.getElementById('cameraContainer');
+        let cameraSelect = document.getElementById('cameraSelect');
+        let engine;
+        let currentStream;
+
+        Module.onRuntimeInitialized = () => {
+            try {
+                console.log('Constructor started');
+                engine = new Module.Engine();
+                console.log('Init started');
+                engine.init('resources');
+                console.log('Init finished');
+                // List cameras and start the default camera
+                listCameras();
+            } catch (e) {
+                console.error('Error:', e);
+            }
+        };
+
+        function listCameras() {
+            navigator.mediaDevices.enumerateDevices()
+                .then(devices => {
+                    cameraSelect.innerHTML = '';
+                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                    videoDevices.forEach((device, index) => {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.text = device.label || `Camera ${index + 1}`;
+                        cameraSelect.appendChild(option);
+                    });
+                    cameraSelect.style.display = 'block';
+                    cameraSelect.onchange = () => startCamera(cameraSelect.value);
+                    // Start the first camera by default
+                    if (videoDevices.length > 0) {
+                        startCamera(videoDevices[0].deviceId);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error listing devices: ', err);
+                });
+        }
+
+        function startCamera(deviceId) {
+            if (currentStream) {
+                // Stop any existing streams before starting a new one
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            navigator.mediaDevices.getUserMedia({ video: { deviceId: deviceId ? { exact: deviceId } : undefined } })
+                .then(stream => {
+                    currentStream = stream;
+                    videoInput.srcObject = stream;
+                    videoInput.onloadedmetadata = () => {
+                        videoInput.play();
+                        onVideoStarted();
+                    };
+                })
+                .catch(err => {
+                    console.error('Error accessing camera: ', err);
+                    utils.printError('Error accessing camera: ' + err.message);
+                });
+        }
+
+        function onVideoStarted() {
+            streaming = true;
+            videoInput.width = videoInput.videoWidth;
+            videoInput.height = videoInput.videoHeight;
+            if (typeof(src) === 'undefined' || typeof(dst) === 'undefined'){
+                src = new Module.Mat(videoInput.height, videoInput.width);
+                dst = new Module.Mat(videoInput.height, videoInput.width);
+            }
+            // Hide loading message and show camera container
+            downloadProgressBar.style.display = 'none';
+            loadingMessage.style.display = 'none';
+            cameraContainer.style.display = 'block';
+            processVideo();
+        }
+
+        function onVideoStopped() {
+            streaming = false;
+            canvasContext.clearRect(0, 0, canvasOutput.width, canvasOutput.height);
+            // Show loading message and hide camera container
+            downloadProgressBar.style.display = 'block';
+            loadingMessage.style.display = 'block';
+            cameraContainer.style.display = 'none';
+        }
+
+        let video = document.getElementById('videoInput');
+        let src, dst;
+        let cap = new VideoCapture(video);
+
+        const FPS = 30;
+        function processVideo() {
+            try {
+                if (!streaming) {
+                    return;
+                }
+                let begin = Date.now();
+                // start processing.
+                cap.read(src);
+                engine.process(src, dst);
+                const resultImg = new ImageData(new Uint8ClampedArray(dst.data), dst.cols, dst.rows);
+                canvasContext.clearRect(0, 0, canvasOutput.width, canvasOutput.height);
+                canvasContext.putImageData(resultImg, 0, 0);
+                // schedule the next one.
+                let delay = 1000/FPS - (Date.now() - begin);
+                setTimeout(processVideo, delay);
+            } catch (err) {
+                utils.printError(err);
+            }
+        };
+    </script>
+
+</body>
+</html>
